@@ -1,0 +1,16 @@
+[project]
+name = "keras-quickstart"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "drive>=0.4.5",
+    "geopandas>=1.0.1",
+    "matplotlib>=3.10.1",
+    "radiant-mlhub>=0.4.1",
+    "rasterio>=1.4.3",
+    "shapely>=2.1.0",
+    "tensorflow>=2.19.0",
+    "tensorflow-datasets>=4.9.8",
+]
