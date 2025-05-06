@@ -1,6 +1,8 @@
 from typing import Any, List, Dict, TypeVar, Callable, Optional
 import logging
 
+from numpy.f2py.auxfuncs import throw_error
+
 from src.model import DTO, SkipPipelineError, SkipStageError
 from src.pipeline.stage import Stage
 
@@ -10,12 +12,11 @@ T = TypeVar("T", bound="Pipeline")
 Option = Callable[[T], None]
 
 class Pipeline:
-    def __init__(self, dto: DTO, stages: List[Stage], *options:Option):
-        self.dto = dto
+    def __init__(self, stages: List[Stage], *options:Option):
         self.stages = stages
         self.logger: Optional[logging.Logger] = None
 
-    def run(self) -> None:
+    def run(self, dto: DTO) -> DTO:
         """
         Runs the pipeline.
         :return: None
@@ -25,13 +26,15 @@ class Pipeline:
             try:
                 # Note that we replace the DTO at each pipeline stage. We can use this for playback by persisting the
                 # DTO at each stage along with the stage name.
-                self.dto = s.run(self.dto)
+                dto = s.run(dto)
             except SkipStageError as e:
                 self.log(f"Hiccup, skipping stage {s.__class__.__name__}: {e}")
                 continue
             except SkipPipelineError as e:
                 self.log(f"Show stopper! Skipping pipeline: {e}")
-                return
+                raise e # Send to the error handler in main.
+
+        return dto
 
 
     def log(self, msg: str, lvl: int = logging.INFO) -> None:

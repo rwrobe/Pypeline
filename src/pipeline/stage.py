@@ -12,7 +12,7 @@ def Stage(ABC):
     to check if the stage should run. If it should, we call the `run` method to execute the stage.
     """
     @abstractmethod
-    def accept(self, dto: DTO) -> Union[SkipStageError, SkipPipelineError]:
+    def accept(self, dto: DTO) -> Union[None, SkipStageError, SkipPipelineError]:
         """
         Checks whether pre-conditions are met for the stage to run.
         :return: None
