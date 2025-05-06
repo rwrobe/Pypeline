@@ -1,9 +1,8 @@
-from typing import Any, List, Dict, TypeVar, Callable
+from typing import Any, List, Dict, TypeVar, Callable, Optional
+import logging
 
-from src.extract.extractor import Extractor
-from src.transform.transformer import Transformer
-from src.load.loader import Loader
-
+from src.model import DTO, SkipPipelineError, SkipStageError
+from src.pipeline.stage import Stage
 
 # Functional option pattern in Python!
 T = TypeVar("T", bound="Pipeline")
@@ -11,30 +10,55 @@ T = TypeVar("T", bound="Pipeline")
 Option = Callable[[T], None]
 
 class Pipeline:
-    def __init__(self, extractor: Extractor, transformers: List[Transformer], loader: Loader, *options:Option):
-        self.extractor = extractor
-        self.transformers = transformers
-        self.loader = loader
+    def __init__(self, dto: DTO, stages: List[Stage], *options:Option):
+        self.dto = dto
+        self.stages = stages
+        self.logger: Optional[logging.Logger] = None
 
     def run(self) -> None:
         """
         Runs the pipeline.
         :return: None
         """
-        # Extract data
-        try:
-            data = self.extractor.extract()
-        except Exception as e:
-            # TODO: Need different extraction errors.
-            print(f"Error during extraction: {e}")
-            return
+        # For each stage in the pipline
+        for s in self.stages:
+            try:
+                # Note that we replace the DTO at each pipeline stage. We can use this for playback by persisting the
+                # DTO at each stage along with the stage name.
+                self.dto = s.run(self.dto)
+            except SkipStageError as e:
+                self.log(f"Hiccup, skipping stage {s.__class__.__name__}: {e}")
+                continue
+            except SkipPipelineError as e:
+                self.log(f"Show stopper! Skipping pipeline: {e}")
+                return
 
-        # Transform data
-        for transformer in self.transformers:
-            data = transformer.transform(data)
 
-        # Load data
-        try:
-            self.loader.load(data)
-        except Exception as e:
-            log.error(f"Error during loading: {e}")
+    def log(self, msg: str, lvl: int = logging.INFO) -> None:
+        """
+        Logs a message.
+        :param msg: Message to log.
+        :param lvl: Logging level.
+        :return: None
+        """
+        if self.logger is not None:
+            self.logger.log(lvl, msg)
+        else:
+            print(msg)
+
+LOG_FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
+
+# with_logger could be a kwarg or a decorator, but sometimes you do something because you want to know if you can
+def with_logger(logger: logging.Logger) -> Option:
+    def option(instance: Pipeline) -> None:
+        logger.setLevel(logging.INFO)
+
+        # Add a stdout handler if not already attached
+        if not logger.handlers:
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
+
+        instance.logger = logger
+    return option

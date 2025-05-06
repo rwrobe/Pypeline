@@ -5,7 +5,7 @@ import geopandas as gpd
 from shapely.geometry import Point
 import random
 
-from src.extract.tf import TFLoader, DatasetSplit
+from src.pipeline.stages.extract_from_tensorflow import TFLoader, DatasetSplit
 from src.pipeline.pipeline import Pipeline
 
 
