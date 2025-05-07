@@ -1,4 +1,5 @@
 import uuid
+import os
 
 import folium
 import tensorflow as tf
@@ -44,13 +45,14 @@ def main():
                     valid_ratio=0.2
                 )
             ),
-            # Train the model with Keras
+            # Train the model with Keras, with caching enabled
             ApplyKerasSequential(
                 config=KerasConfig(
                     epochs=5,
                     loss='sparse_categorical_crossentropy',
                     metrics=['accuracy'],
-                    optimizer='adam'
+                    optimizer='adam',
+                    use_cache=True  # Enable model caching
                 ),
                 layers=[
                     tf.keras.layers.Rescaling(1. / 255),
@@ -59,7 +61,9 @@ def main():
                     tf.keras.layers.GlobalAveragePooling2D(),
                     tf.keras.layers.Dense(128, activation='relu'),
                     tf.keras.layers.Dense(len(dto.class_names), activation='softmax')
-                ]
+                ],
+                # Optionally specify a custom cache directory
+                cache_dir=os.path.join(os.path.dirname(__file__), "model_cache")
             ),
         ]
     )
@@ -67,6 +71,7 @@ def main():
     # Run the pipeline.
     try:
         dto = es_pipe.run(dto)
+        print(f"Pipeline completed successfully with model: {dto.keras_model}")
     except Exception as e:
         print(f"Pipeline failed: {e}")
         return

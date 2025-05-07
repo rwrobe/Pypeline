@@ -4,7 +4,7 @@ from typing import Union
 from src.model import DTO, SkipStageError, SkipPipelineError
 
 
-def Stage(ABC):
+class Stage(ABC):
     """
     Abstract base class for all stages in the pipeline.
 

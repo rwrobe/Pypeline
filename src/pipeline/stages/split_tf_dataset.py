@@ -58,7 +58,7 @@ class SplitTFDataset(Stage):
         if not isinstance(dto.raw_data, tf.data.Dataset):
             raise SkipPipelineError("Raw data must be a TensorFlow Dataset to split with SplitTFDataset.")
 
-        if not (0.0 <= self.split_ratio <= 1.0):
+        if not (0.0 <= self.config.train_ratio <= 1.0) or not (0.0 <= self.config.valid_ratio <= 1.0):
             raise SkipPipelineError("Split ratio must be between 0 and 1.")
 
         return None
