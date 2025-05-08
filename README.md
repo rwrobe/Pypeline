@@ -1,8 +1,11 @@
-# PepperPrepper
+# Pypeline
 
-PepperPrepper is a way for me to learn to work with geospatial data using TensorFlow. It will be a Python backend that uses current and predicted daily weather data to help me decide whether to put my green chile outside and water it for maximum spiciness.
+Generic strategy pattern pipeline to work with Keras models on geospatial data.
 
-## TODO
-- [ ] Load historical min temp and use it to predict the next 7 days.
-
-Follows [this tutorial](https://developmentseed.org/tensorflow-eo-training-2/docs/Lesson2c_Intro_TF2_Keras_TFDS_RadiantEarth.html).
+## TODO:
+- [ ] Review unit test cases
+- [ ] Build API router on Flask
+- [ ] SPA for consuming geospatial datasets
+- [ ] More extractors
+- [ ] Add Clickhouse DB data sink
+- [ ] Find Pypeline's true purpose
